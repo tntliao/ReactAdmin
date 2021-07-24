@@ -1,13 +1,19 @@
 import React, { Component } from 'react';
-import { Button } from 'antd';
-// import './App.less';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Admin from './pages/Admin';
+import Login from './pages/Login';
+
+import './App.less';
 
 export default class App extends Component {
     render() {
         return (
-            <div className="App">
-                <Button type="primary">Button</Button>
-            </div>
+            <BrowserRouter>
+                <Switch> {/* 匹配到一个就不会继续匹配 */}
+                    <Route path="/login" component={Login}></Route>
+                    <Route path="/" component={Admin}></Route>
+                </Switch>
+            </BrowserRouter>
         )
     }
 }
