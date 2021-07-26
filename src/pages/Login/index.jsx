@@ -1,8 +1,13 @@
 import React, { Component, Fragment } from 'react';
-import { Form, Input, Button } from 'antd';
+import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Redirect } from 'react-router-dom'
 import './index.less';
-import logo from './images/logo.png';
+import logo from '../../assets/images/logo.png';
+import { reqLogin } from '../../api/index'
+import memoryUtils from '../../utils/memoryUtils';
+import storageUtils from '../../utils/storageUtils';
+
 export default class Login extends Component {
 
     /* 对密码进行自定义验证 */
@@ -21,10 +26,24 @@ export default class Login extends Component {
     }
 
     render() {
-        const onFinish = (values) => {
-            console.log('Received values of form: ', values);
-        };
-        
+
+        const data = JSON.parse(storageUtils.getStorage('user') || '{}');
+        if (data.username) {
+            return <Redirect to="/" />
+        }
+
+        const onFinish = async (values) => {
+            const { username, password } = values;
+            const response = await reqLogin(username, password);
+            if (response.status === 0) {
+                message.success('登录成功')
+                memoryUtils.user = response.data;
+                storageUtils.setStorage(JSON.stringify(response.data));
+                this.props.history.replace('/');
+            } else {
+                message.error(response.msg)
+            }
+        }
         return (
             <Fragment>
                 <div className="login_container">
@@ -51,7 +70,7 @@ export default class Login extends Component {
                                 ]}
                             >
                                 {/* prefix icon组件 */}
-                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="用户名" />
+                                <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="用户名" autoComplete="off" />
                             </Form.Item>
 
                             <Form.Item
