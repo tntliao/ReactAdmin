@@ -33,6 +33,7 @@ export default class Login extends Component {
         }
 
         const onFinish = async (values) => {
+            console.log(values);
             const { username, password } = values;
             const response = await reqLogin(username, password);
             if (response.status === 0) {

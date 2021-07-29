@@ -1,13 +1,13 @@
 import React, { Component, Fragment } from 'react';
 import { Menu } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import menuList from '../../config/menuConfig';
 import logo from '../../assets/images/logo.png';
 import './index.less';
 
 const { SubMenu } = Menu;
 
-export default class LeftNav extends Component {
+class LeftNav extends Component {
 
     //第一种方法
     /* getMenuNodes = (menuList) => {
@@ -36,13 +36,22 @@ export default class LeftNav extends Component {
 
     //第二种方法
     getMenuNodes = (menuList) => {
+
+        // 1.获取当前路径
+        const path = this.props.location.pathname;
+
         return menuList.reduce((pre, item) => {
             if (item.children) {
+
+
+                // 2.查找一个与当前请求路径匹配的子item 
+                const cItem = item.children.find(cItem => cItem.key === path);
+                // 2.1如果匹配，说明需要展开，把它存起来
+                if (cItem) this.openKey = item.key;
+
                 pre.push(
                     <SubMenu key={item.key} icon={item.icon} title={item.title}>
-                        {
-                            this.getMenuNodes(item.children)
-                        }
+                        {this.getMenuNodes(item.children)}
                     </SubMenu>
                 )
             } else {
@@ -57,7 +66,17 @@ export default class LeftNav extends Component {
             return pre;
         }, [])
     }
+    /* 
+        3.在render()之前调用一次
+          在第一次render()之前render一次
+          为第一次render()准备数据(同步)
+     */
+    UNSAFE_componentWillMount() {
+        this.menuNodes = this.getMenuNodes(menuList);
+    }
+
     render() {
+        const path = this.props.location.pathname;
         return (
             <Fragment>
                 <div className="left_nav">
@@ -66,17 +85,20 @@ export default class LeftNav extends Component {
                         <h1>硅谷后台</h1>
                     </Link>
                 </div>
-
                 <Menu
-                    defaultSelectedKeys={['home']}
+                    selectedKeys={[path]}
+                    // 第三步 提前执行就是为了获取 openkey 从而展开需要打开的选项
+                    defaultOpenKeys={[this.openKey]}
                     mode="inline"
                     theme="dark"
                 >
-                    {this.getMenuNodes(menuList)}
+                    {/* 4.渲染到页面 */}
+                    {this.menuNodes}
                 </Menu>
-
             </Fragment>
 
         )
     }
 }
+
+export default withRouter(LeftNav);

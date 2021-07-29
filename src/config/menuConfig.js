@@ -1,11 +1,11 @@
 import {
     HomeOutlined,
     PieChartOutlined,
+    BarsOutlined,
     AccountBookOutlined,
     ShopOutlined,
     BarChartOutlined,
     RadarChartOutlined,
-    BarsOutlined,
     UserAddOutlined,
     SmileOutlined
 } from '@ant-design/icons';
@@ -24,7 +24,7 @@ const menuList = [
             {
                 title: '品类管理',
                 key: '/shop/category',
-                icon: <ShopOutlined />
+                icon: <BarsOutlined />
             },
             {
                 title: '商品管理',

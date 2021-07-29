@@ -8,7 +8,7 @@ import axios from "axios";
 import { message } from 'antd';
 
 export default function ajax(url, data = {}, type = 'GET') {
-    return new Promise((resolve, rejecy) => {
+    return new Promise((resolve, reject) => {
         let promise;
         if (type === 'GET') { //发送GET请求
             promise = axios.get(url, {

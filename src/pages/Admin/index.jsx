@@ -6,7 +6,7 @@ import storageUtils from '../../utils/storageUtils';
 import Header from '../../components/Header'
 import LeftNav from '../../components/LeftNav';
 import Home from '../Home';
-import Category from '../Shop/Category ';
+import Category from '../Shop/Category';
 import Commodity from '../Shop/Commodity';
 import User from '../User'
 import Role from '../Role';
@@ -25,13 +25,13 @@ export default class Admin extends Component {
             return <Redirect to="/" />
         }
         return (
-            <Layout style={{ height: '100%' }}>
+            <Layout style={{ height: '100%', overflow: 'hidden' }}>
                 <Sider>
                     <LeftNav />
                 </Sider>
                 <Layout>
                     <Header>Header</Header>
-                    <Content style={{ backgroundColor: "#fff" }}>
+                    <Content style={{ backgroundColor: "#fff", margin: '20px' }}>
                         <Switch>
                             <Route path="/home" component={Home}></Route>
                             <Route path="/shop/category" component={Category}></Route>
