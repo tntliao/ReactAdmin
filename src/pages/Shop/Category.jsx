@@ -1,8 +1,8 @@
 import React, { Component, Fragment } from 'react'
 import { Card, Button, Table, message, Modal } from 'antd';
-import { PlusOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { PlusOutlined, ArrowRightOutlined, } from '@ant-design/icons';
 import LinkButton from '../../components/LinkButton';
-import { reqGetCategory, reqUpdateCategory } from '../../api/index';
+import { reqGetCategory, reqUpdateCategory, reqAddCategory } from '../../api/index';
 import AddFrom from './AddFrom'
 import UpdataFrom from './UpdataFrom';
 export default class Category extends Component {
@@ -14,14 +14,15 @@ export default class Category extends Component {
         parentId: 0, //当前需要显示的分类列表的父分类ID
         parentName: '', //当前需要显示的分类列表的父分类名称
         showStatus: 0, //标识添加/更新的确认框是否显示，0都不显示,1显示添加,2显示更新
-        updataFromData: '' //UpdataFrom传过来的值
+        updataFromData: '',//UpdataFrom传过来的值
+        addFromData: '' //FromData传过来的值
     }
-    // 组件挂载前
+    // 组件挂载前 render之前
     UNSAFE_componentWillMount() {
         //table的信息
         this.tableInfo();
     }
-    //
+    //组件挂载后 redner之后
     componentDidMount() {
         this.GetCategory();
     }
@@ -77,6 +78,7 @@ export default class Category extends Component {
             parentId: 0,
             parentName: ''
         })
+        this.GetCategory();
     }
 
     //隐藏对话框
@@ -86,29 +88,45 @@ export default class Category extends Component {
         })
     }
     //显示添加分类
-    addCategory = () => {
-        console.log('addCategory');
+    addCategory = async () => {
+        const { parentId, addFromData: { selectId, inputValue } } = this.state;
+        if (inputValue) {
+            this.setState({
+                showStatus: 0
+            })
+            const result = await reqAddCategory(selectId, inputValue);
+            console.log(result);
+            if (result.status === 0) {
+                //添加分类和当前的分类一样才重新获取数据
+                if (parentId === selectId) {
+                    console.log('刷新');
+                    this.GetCategory()
+                } else {
+                    console.log('不刷新');
+                }
+            }
+        } else {
+            message.warning('分类名称不能为空')
+        }
     }
     //显示更分类
     updataCategory = async () => {
-        //1.关闭对话框
-        this.setState({
-            showStatus: 0
-        })
         const parentId = this.category._id;
         const { updataFromData } = this.state
-
         if (updataFromData.trim()) {
+            //1.关闭对话框
+            this.setState({
+                showStatus: 0
+            })
             //2.修改数据
-            const result = await reqUpdateCategory(parentId, updataFromData)
+            const result = await reqUpdateCategory(parentId, updataFromData);
             if (result.status === 0) {
                 //3.重新请求一次数据渲染
                 this.GetCategory();
             }
         } else {
-            message.error('修改失败')
+            message.warning('分类名称不能为空')
         }
-
     }
     //点击添加按钮显示对话框
     showAddCategory = () => {
@@ -126,10 +144,15 @@ export default class Category extends Component {
     //获取UpdataFrom输入的值
     getUpdateFrom = (updataFromData) => {
         this.setState({
-            updataFromData
+            updataFromData,
         })
     }
-
+    getAddFrom = (addFromData) => {
+        console.log(addFromData);
+        this.setState({
+            addFromData
+        })
+    }
     render() {
         const { isLoding, dataSource, parentId, subCategorys, parentName, showStatus } = this.state;
         const category = this.category || { name: 'default' };
@@ -160,7 +183,7 @@ export default class Category extends Component {
                     visible={showStatus === 1}
                     onOk={this.addCategory}
                     onCancel={this.handleCancel}>
-                    <AddFrom />
+                    <AddFrom dataSource={dataSource} parentId={parentId} getAddFrom={this.getAddFrom} />
                 </Modal>
                 <Modal title="修改分类"
                     visible={showStatus === 2}
