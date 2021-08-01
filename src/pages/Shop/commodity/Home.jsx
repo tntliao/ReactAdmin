@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { Card, Button, Select, Input, Table, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { reqGetCommodity } from '../../../api/index';
+import { reqGetCommodity, reqSearchProducts } from '../../../api';
 import LinkBottom from '../../../components/LinkButton';
 import { PAGE_SIZE } from '../../../utils/constant'
 const { Option } = Select;
@@ -13,7 +13,9 @@ export default class Home extends Component {
     state = {
         total: 0, // 数据的总数量
         dataSource: [], //列表数据
-        isLading: false //是否正在加载数据
+        isLading: false, //是否正在加载数据
+        searchType: 'productName', //选择框默认值
+        searchName: '', //搜索的关键词
     }
 
     componentDidMount() {
@@ -22,8 +24,15 @@ export default class Home extends Component {
 
     //获取数据信息
     getDataSource = async (pageNum) => {
-        this.setState({ isLading: true })
-        const result = await reqGetCommodity(pageNum, PAGE_SIZE);
+        this.setState({ isLading: true });
+        let result;
+        const { searchType, searchName } = this.state;
+
+        if (searchName) {
+            result = await reqSearchProducts({ pageNum, pageSize: PAGE_SIZE, searchName, searchType });
+        } else {
+            result = await reqGetCommodity(pageNum, PAGE_SIZE);
+        }
         this.setState({ isLading: false })
         const { total, list } = result.data;
         if (result.status === 0) {
@@ -36,15 +45,18 @@ export default class Home extends Component {
         }
     }
 
-    handleChange = (value) => {
-        console.log(`selected ${value}`);
-    }
-    onSearch = (value) => {
-        console.log(value);
+    handleChange = (flag) => {
+        return (value) => {
+            if (flag) {
+                this.setState({ selectValue: value })
+            } else {
+                this.setState({ searchName: value.target.value })
+            }
+        }
     }
 
     render() {
-        const { dataSource, total, isLading } = this.state
+        const { dataSource, total, isLading, searchType, searchName } = this.state
 
         const columns = [
             {
@@ -91,13 +103,12 @@ export default class Home extends Component {
 
         const title = (
             <Fragment>
-                <Select defaultValue="按名称搜索" style={{ width: 120 }} onChange={this.handleChange}>
-                    <Option value="jack">按名称搜索</Option>
-                    <Option value="lucy">按排序搜索</Option>
+                <Select defaultValue={searchType} style={{ width: 120 }} onChange={this.handleChange(true)}>
+                    <Option value="productName">按名称搜索</Option>
+                    <Option value="productDesc">按描述搜索</Option>
                 </Select>
-
-                <Input style={{ width: 110, margin: '0 10px' }} placeholder='输入关键字' />
-                <Button type="primary" style={{ height: 31.6 }}>搜索</Button>
+                <Input style={{ width: 110, margin: '0 10px' }} placeholder='输入关键字' value={searchName} onChange={this.handleChange(false)} />
+                <Button type="primary" style={{ height: 31.6 }} onClick={() => this.getDataSource(1)}> 搜索</Button>
             </Fragment>
         )
         const extra = (
