@@ -25,7 +25,7 @@ export default class Admin extends Component {
             return <Redirect to="/" />
         }
         return (
-            <Layout style={{ height: '100%', overflow: 'hidden' }}>
+            <Layout>
                 <Sider>
                     <LeftNav />
                 </Sider>

@@ -36,14 +36,13 @@ class LeftNav extends Component {
 
     //第二种方法
     getMenuNodes = (menuList) => {
-
         // 1.获取当前路径
-        const path = this.props.location.pathname;
-
+        let path = this.props.location.pathname;
+        if (path.indexOf('/shop/commodity') === 0) {
+            path = '/shop/commodity';
+        }
         return menuList.reduce((pre, item) => {
             if (item.children) {
-
-
                 // 2.查找一个与当前请求路径匹配的子item 
                 const cItem = item.children.find(cItem => cItem.key === path);
                 // 2.1如果匹配，说明需要展开，把它存起来
@@ -76,7 +75,10 @@ class LeftNav extends Component {
     }
 
     render() {
-        const path = this.props.location.pathname;
+        let path = this.props.location.pathname;
+        if (path.indexOf('/shop/commodity') === 0) {
+            path = '/shop/commodity';
+        }
         return (
             <Fragment>
                 <div className="left_nav">

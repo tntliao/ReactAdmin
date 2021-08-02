@@ -77,13 +77,13 @@ class Header extends Component {
                         {/* <LinkBottom onClick={this.loginOut}>退出</LinkBottom> */}
                     </div>
                 </div>
-                <div className="header_bottom">
+                {<div className="header_bottom">
                     <div className="leftTitle">{title}</div>
                     <div className="rightTitle">
                         <p className="dateTime">{this.state.nowTime}</p>
                         <p className="weather">{this.state.weather}</p>
                     </div>
-                </div>
+                </div>}
             </div>
         )
     }

@@ -1,3 +1,6 @@
+/* 
+    设置 获取 删除 在本地的数据
+ */
 import store from 'store';
 
 const storage = {

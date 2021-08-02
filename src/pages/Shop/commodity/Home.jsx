@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import { Card, Button, Select, Input, Table, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import { reqGetCommodity, reqSearchProducts } from '../../../api';
+import { reqGetCommodity, reqSearchProducts, reqUpdateStatus } from '../../../api';
 import LinkBottom from '../../../components/LinkButton';
 import { PAGE_SIZE } from '../../../utils/constant'
 const { Option } = Select;
@@ -19,10 +19,11 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
+        // 执行 发送请求获取数据信息
         this.getDataSource(1);
     }
 
-    //获取数据信息
+    //发送请求获取数据信息
     getDataSource = async (pageNum) => {
         this.setState({ isLading: true });
         let result;
@@ -45,6 +46,7 @@ export default class Home extends Component {
         }
     }
 
+    //收集 选择框和搜索框 的内容
     handleChange = (flag) => {
         return (value) => {
             if (flag) {
@@ -54,7 +56,21 @@ export default class Home extends Component {
             }
         }
     }
-
+    // 进入详情页面
+    fromDetail = (item) => {
+        this.props.history.push('/shop/commodity/detail', item)
+    }
+    //更新指定商品的状态
+    updateStatus = async (productId, status) => {
+        console.log(productId);
+        const result = await reqUpdateStatus(productId, status);
+        if (result.status === 0) {
+            message.success('修改商品状态成功')
+            this.getDataSource(1);
+        } else {
+            message.error('修改商品状态失败')
+        }
+    }
     render() {
         const { dataSource, total, isLading, searchType, searchName } = this.state
 
@@ -66,9 +82,9 @@ export default class Home extends Component {
             {
                 title: '商品描述',
                 dataIndex: 'desc',
-                width: 655
             },
             {
+                width: 90,
                 title: '价格',
                 dataIndex: 'price',
                 render: (price) => {
@@ -76,12 +92,20 @@ export default class Home extends Component {
                 }
             },
             {
+                width: 110,
                 title: '状态',
-                render: () => {
+                // dataIndex: 'status',
+                render: (item) => {
+                    const { status, _id } = item
                     return (
                         <Fragment>
-                            <Button type="primary" style={{ marginRight: 10 }}>下架</Button>
-                            <span>在售</span>
+                            <Button
+                                type="primary"
+                                style={{ marginRight: 10 }}
+                                onClick={() => this.updateStatus(_id, status === 1 ? 2 : 1)}
+                            >
+                                {status === 1 ? "下架" : "上架"}</Button>
+                            <span>{status === 1 ? "在售" : "已下架"}</span>
                         </Fragment>
                     )
                 }
@@ -90,10 +114,10 @@ export default class Home extends Component {
                 title: '操作',
                 // width: 135,
                 textWrap: 'word-break',
-                render: () => {
+                render: (item) => {
                     return (
                         <Fragment>
-                            <LinkBottom>详情</LinkBottom>
+                            <LinkBottom onClick={() => this.fromDetail(item)}>详情</LinkBottom>
                             <LinkBottom>修改</LinkBottom>
                         </Fragment>
                     )
@@ -112,16 +136,16 @@ export default class Home extends Component {
             </Fragment>
         )
         const extra = (
-            <Button type="primary">
-                <PlusOutlined />
+            <Button type="primary" onClick={() => this.props.history.push('/shop/commodity/addUpdata')}>
+                < PlusOutlined />
                 添加商品
-            </Button>
+            </Button >
         )
 
         return (
             <Fragment>
                 <Card title={title} extra={extra}>
-                    <Table
+                    {<Table
                         rowKey="_id"
                         bordered
                         columns={columns}
@@ -133,7 +157,7 @@ export default class Home extends Component {
                             defaultPageSize: PAGE_SIZE,
                             onChange: paginate => this.getDataSource(paginate)
                         }}
-                    />
+                    />}
                 </Card>
             </Fragment >
         )
