@@ -1,6 +1,8 @@
 import React, { Component, Fragment } from 'react'
-import { Card, Form, Input, Button, Cascader } from 'antd'
+import { Card, Form, Input, Button, Cascader, message } from 'antd'
+import PicturesWall from './PicturesWall';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { reqGetCategory } from '../../../api'
 import LinkButton from '../../../components/LinkButton';
 const { TextArea } = Input;
 
@@ -8,20 +10,21 @@ const { TextArea } = Input;
 export default class AddUpdate extends Component {
 
     state = {
-        options: [
-            {
-                value: 'zhejiang',
-                label: 'Zhejiang',
-                isLeaf: false,
-            },
-            {
-                value: 'jiangsu',
-                label: 'Jiangsu',
-                isLeaf: false,
-            },
-        ]
+        options: [], // 列表选项数据
+        cascaderValue: [], // 选中的列表数据
     };
 
+    UNSAFE_componentWillMount() {
+        //取出携带的state
+        const product = this.props.location.state;
+        //保存是否是更新的标识
+        this.isUpdate = !!product;
+        this.product = product || {}
+    }
+
+    componentDidMount() {
+        this.getCategorys('0')
+    }
     // 自定义价格验证
     verifyPrice = (_, value) => {
         if (value * 1 > -1) {
@@ -34,40 +37,111 @@ export default class AddUpdate extends Component {
     onFinish = (values) => {
         console.log('Success:', values);
     };
-
-    onChange = (value, selectedOptions) => {
-        console.log(value, selectedOptions);
+    // select 发生变化
+    cascaderChange = (value, cascaderOptions) => {
+        /* 
+            value 只是id
+            cascaderOptions 是 详细数据
+         */
+        console.log(value);
+        this.setState({
+            cascaderValue: value
+        })
     };
-
-    loadData = selectedOptions => {
-        //这个应该是被选中的第一个
-        // const targetOption = selectedOptions[selectedOptions.length - 1];
+    // 二级列表数据
+    loadData = async selectedOptions => {
         const targetOption = selectedOptions[0];
         targetOption.loading = true;
+        //根据选中的分类，请求获取二级分类列表
+        const subCategorys = await this.getCategorys(targetOption.value);
+        targetOption.loading = false;
+        if (subCategorys && subCategorys.length > 0) {
+            //生成二级列表options
+            const childOptions = subCategorys.map(item => ({
+                value: item._id,
+                label: item.name,
+                isLeaf: true,
+            }))
+            //添加二级列表
+            targetOption.children = childOptions;
+        } else { //当前选中的没有子分类
+            targetOption.isLeaf = true;
+        }
+        this.setState({
+            /*
+                为什么这么更新？
+                    因为上面直接通过.属性来修改状态，在内存中已经是修改的了，但是react不会进行更新，必须通过setState才行 
+             */
+            options: [...this.state.options]
+        })
+    }
+    // 加工数据
+    initOptions = async (data) => {
 
-        setTimeout(() => {
-            targetOption.loading = false;
-            targetOption.children = [
-                {
-                    label: `${targetOption.label} Dynamic 1`,
-                    value: 'dynamic1',
-                },
-                {
-                    label: `${targetOption.label} Dynamic 2`,
-                    value: 'dynamic2',
-                },
-            ];
-            this.setState({
-                options: [...this.state.options],
-            });
-        }, 1000);
+        const options = data.map(item => ({
+            value: item._id,
+            label: item.name,
+            isLeaf: false,
+        }))
+
+        //如果是一个二级分类商品的更新
+        const { isUpdate, product } = this;
+        // const { pCategoryId, categoryId } = product;
+        const { pCategoryId } = product;
+        if (isUpdate && pCategoryId !== '0') {
+            //获取对于的二级分类列表
+            const subCategorys = await this.getCategorys(pCategoryId);
+            //生成二级下拉列表的option
+            const childOptions = subCategorys.map(item => ({
+                value: item._id,
+                label: item.name,
+                isLeaf: true
+            }))
+
+            //找到当前商品对于的一级option对象
+            const targetOption = options.find(option => option.value === pCategoryId);
+            //关联对于的一级options
+            targetOption.children = childOptions;
+        }
+
+
+        this.setState({
+            options
+        })
+    }
+    // 获取一级/二级分列数据
+    getCategorys = async (parentId) => {
+        const result = await reqGetCategory(parentId);
+        if (result.status === 0) {
+            const categroys = result.data;
+            if (parentId === '0') { //一级分类列表
+                this.initOptions(categroys)
+            } else { //二级分类列表
+                return categroys //返回二级列表 ==> 当前async函数返回的promise就会成功且value为categroys
+            }
+        } else {
+            message.error('获取数据失败')
+        }
     }
 
     render() {
+        const { product, isUpdate } = this;
+        const { categoryId, pCategoryId } = product;
+        const categoryIds = [];
+        if (isUpdate) {
+            //商品是一个一级分类的商品
+            if (pCategoryId === '0') {
+                categoryIds.push(categoryId)
+            } else {
+                categoryIds.push(pCategoryId)
+                categoryIds.push(categoryId)
+            }
+        }
+
         const title = (
             <Fragment>
-                <LinkButton> <ArrowLeftOutlined style={{ margin: "0 10px" }} /></LinkButton>
-                添加商品
+                <LinkButton onClick={() => { this.props.history.goBack() }}> <ArrowLeftOutlined style={{ margin: "0 10px" }} /></LinkButton>
+                {isUpdate ? "修改商品" : "添加商品"}
             </Fragment>
         );
 
@@ -78,7 +152,12 @@ export default class AddUpdate extends Component {
                         name="basic"
                         labelCol={{ span: 2 }}
                         wrapperCol={{ span: 8 }}
-                        initialValues={{ username: '' }}
+                        initialValues={{
+                            goodsName: product.name,
+                            goodsDescribe: product.desc,
+                            goodsPrice: product.price,
+                            categoryIds: categoryIds
+                        }}
                         onFinish={this.onFinish}
                     >
                         <Form.Item
@@ -99,25 +178,33 @@ export default class AddUpdate extends Component {
 
                         <Form.Item
                             label="商品价格"
-                            name="goodsPicre"
-                            rules={[{ validator: this.verifyPrice }]}
+                            name="goodsPrice"
+                            rules={[{ required: true, message: '请输入商品名称' }, { validator: this.verifyPrice }]}
                         >
                             <Input type="number" addonAfter="元" placeholder="请输入商品价格" />
                         </Form.Item>
 
 
-                        <Form.Item label="商品分类" rules={[{ required: true, message: '请指定商品分类' }]}>
+                        <Form.Item
+                            label="商品分类"
+                            name="categoryIds"
+                            rules={[{ required: true, message: '请指定商品分类' }]}
+                        >
                             <Cascader
                                 options={this.state.options}
                                 loadData={this.loadData}
-                                onChange={this.onChange}
-                                changeOnSelect
+                                onChange={this.cascaderChange}
                             />
                         </Form.Item>
 
+                        <Form.Item
+                            label="商品图片"
+                        >
+                            <PicturesWall />
+                        </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit">
-                                Submit
+                                提交
                             </Button>
                         </Form.Item>
                     </Form>

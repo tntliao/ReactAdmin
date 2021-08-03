@@ -56,13 +56,9 @@ export default class Home extends Component {
             }
         }
     }
-    // 进入详情页面
-    fromDetail = (item) => {
-        this.props.history.push('/shop/commodity/detail', item)
-    }
+
     //更新指定商品的状态
     updateStatus = async (productId, status) => {
-        console.log(productId);
         const result = await reqUpdateStatus(productId, status);
         if (result.status === 0) {
             message.success('修改商品状态成功')
@@ -117,8 +113,8 @@ export default class Home extends Component {
                 render: (item) => {
                     return (
                         <Fragment>
-                            <LinkBottom onClick={() => this.fromDetail(item)}>详情</LinkBottom>
-                            <LinkBottom>修改</LinkBottom>
+                            <LinkBottom onClick={() => this.props.history.push('/shop/commodity/detail', item)}>详情</LinkBottom>
+                            <LinkBottom onClick={() => this.props.history.push('/shop/commodity/addUpdata', item)}> 修改</LinkBottom>
                         </Fragment>
                     )
                 }
