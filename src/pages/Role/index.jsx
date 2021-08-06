@@ -116,13 +116,25 @@ export default class Role extends Component {
     };
 
     //权限对话框点击确定的函数
-    handleAuth = () => {
-        this.setState({
-            isShowAuth: false
-        })
+    handleAuth = async () => {
+        const role = this.state.role;
+        this.setState({ isShowAuth: false })
+        const menus = this.authRef.current.getUpdateRole();
+        //把数据更新到这边
+        role.menus = menus;
+        //请求更新
+        const result = await reqUpdateRole(role);
+        if (result.status === 0) {
+            message.success('设置角色权限成功');
+            //更新数据方法1：
+            // this.getRoles();
 
-        const result = this.authRef.current.getUpdateRole();
-        console.log(result);
+            /* this.setState({
+                roles: [...this.state.roles]
+            }) */
+        } else {
+            message.error('设置角色权限失败')
+        }
     }
 
 
