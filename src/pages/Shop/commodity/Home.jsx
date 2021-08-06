@@ -111,6 +111,9 @@ export default class Home extends Component {
                 // width: 135,
                 textWrap: 'word-break',
                 render: (item) => {
+                    /*
+                        imgs 是发送请求存储在 dataSource
+                     */
                     return (
                         <Fragment>
                             <LinkBottom onClick={() => this.props.history.push('/shop/commodity/detail', item)}>详情</LinkBottom>

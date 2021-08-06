@@ -89,18 +89,18 @@ export default class Category extends Component {
     }
     //显示添加分类
     addCategory = async () => {
-        const { parentId, addFromData: { selectId, inputValue } } = this.state;
+        const { parentId, addFromData: { selectId, inputValue, addFromRef } } = this.state;
         if (inputValue) {
             this.setState({
                 showStatus: 0
             })
+            addFromRef.current.resetFields()
             const result = await reqAddCategory(selectId, inputValue);
-            console.log(result);
             if (result.status === 0) {
                 //添加分类和当前的分类一样才重新获取数据
                 if (parentId === selectId) {
                     console.log('刷新');
-                    this.GetCategory()
+                    this.GetCategory();
                 } else {
                     console.log('不刷新');
                 }
@@ -118,6 +118,7 @@ export default class Category extends Component {
             this.setState({
                 showStatus: 0
             })
+            this.updateFromRef.current.resetFields();
             //2.修改数据
             const result = await reqUpdateCategory(parentId, updataFromData);
             if (result.status === 0) {
@@ -142,10 +143,11 @@ export default class Category extends Component {
         })
     }
     //获取UpdataFrom输入的值
-    getUpdateFrom = (updataFromData) => {
+    getUpdateFrom = (updataFromData, updateFromRef) => {
         this.setState({
             updataFromData,
         })
+        this.updateFromRef = updateFromRef;
     }
     getAddFrom = (addFromData) => {
         console.log(addFromData);
@@ -183,7 +185,11 @@ export default class Category extends Component {
                     visible={showStatus === 1}
                     onOk={this.addCategory}
                     onCancel={this.handleCancel}>
-                    <AddFrom dataSource={dataSource} parentId={parentId} getAddFrom={this.getAddFrom} />
+                    <AddFrom
+                        dataSource={dataSource}
+                        parentId={parentId}
+                        getAddFrom={this.getAddFrom}
+                    />
                 </Modal>
                 <Modal title="修改分类"
                     visible={showStatus === 2}

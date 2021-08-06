@@ -4,6 +4,10 @@ import PropsTypes from 'prop-types'
 const { Option } = Select;
 export default class AddFrom extends Component {
 
+    constructor(props) {
+        super(props);
+        this.addFromRef = React.createRef();
+    }
     state = {
         selectId: '',
         inputValue: ''
@@ -24,13 +28,15 @@ export default class AddFrom extends Component {
                 if (value === 'select') {
                     this.setState({ selectId: event }, () => {
                         const { selectId, inputValue } = this.state;
-                        this.props.getAddFrom({ selectId, inputValue })
+                        const addFromRef = this.addFromRef
+                        this.props.getAddFrom({ selectId, inputValue, addFromRef })
                     })
                 } else {
                     this.setState({ inputValue: event.target.value }, () => {
                         let { selectId, inputValue } = this.state;
+                        const addFromRef = this.addFromRef
                         if (!selectId) { selectId = parentId }
-                        this.props.getAddFrom({ selectId, inputValue })
+                        this.props.getAddFrom({ selectId, inputValue, addFromRef })
                     })
                 }
 
@@ -47,20 +53,19 @@ export default class AddFrom extends Component {
         }
 
         return (
-            <Form >
-                <Select key={getDefaultValue(parentId)} defaultValue={getDefaultValue(parentId)} style={{ width: '100%' }} onChange={handleChange('select')} >
+            <Form
+                ref={this.addFromRef}
+                initialValues={{ addInput: '' }}
+            >
+                <Select
+                    key={getDefaultValue(parentId)}
+                    onChange={handleChange('select')}
+                    defaultValue={getDefaultValue(parentId)}
+                    style={{ width: '100%', marginBottom: 40 }}
+                >
                     <Option key='一级分类'>一级分类</Option>
                     {sourceList}
                 </Select>
-                <p style={{
-                    color: 'black',
-                    background: '#ffc107',
-                    display: 'inline-block',
-                    marginTop: '14px',
-                    padding: '8px',
-                    borderRadius: '2px'
-                }}>
-                    内容为上次输入内容</p>
                 <Form.Item
                     name="content"
                     rules={[
@@ -74,7 +79,13 @@ export default class AddFrom extends Component {
                         }
                     ]}
                 >
-                    <Input type="text" name="addInput" onChange={handleChange('input')} placeholder="请输入分类名称" autoComplete="off" />
+                    <Input
+                        type="text"
+                        name="addInput"
+                        onChange={handleChange('input')}
+                        placeholder="请输入分类名称"
+                        autoComplete="off"
+                    />
                 </Form.Item>
             </Form >
         )

@@ -29,12 +29,18 @@ export const reqSearchProducts = ({ pageNum, pageSize, searchName, searchType })
 export const reqClassify = (categoryId) => ajax(BASE + '/manage/category/info', { categoryId })
 //更新商品的状态(上架/下架)
 export const reqUpdateStatus = (productId, status) => ajax(BASE + '/manage/product/updateStatus', { productId, status }, 'POST')
-
-
-
-
-
-
+//删除照片
+export const deleteImg = (name) => ajax(BASE + '/manage/img/delete', { name }, 'POST');
+//添加/更新商品
+export const reqAddOrUpdateProduct = (product) => ajax(BASE + '/manage/product/' + (product._id ? 'update' : 'add'), product, 'POST')
+//更新商品
+// export const reqAddProduct = (product) => ajax(BASE + '/manage/product/update', product, 'POST')
+//获取所有的角色列表
+export const reqRoles = () => ajax(BASE + '/manage/role/list');
+//添加角色
+export const reqAddRole = (roleName) => ajax(BASE + '/manage/role/add', { roleName }, 'POST')
+//更新角色
+export const reqUpdateRole = (role) => ajax(BASE + '/manage/role/add', role, 'POST')
 
 
 

@@ -3,13 +3,18 @@ import PropTypes from 'prop-types';
 import { Form, Input } from 'antd';
 export default class UpdataFrom extends Component {
 
+    constructor(props) {
+        super(props);
+        this.updateFromRef = React.createRef();
+    }
+
     static propTypes = {
         categoryName: PropTypes.string.isRequired,
         getUpdateFrom: PropTypes.func.isRequired
     }
 
     getFromData = (event) => {
-        this.props.getUpdateFrom(event.target.value);
+        this.props.getUpdateFrom(event.target.value, this.updateFromRef);
     }
 
     render() {
@@ -18,15 +23,10 @@ export default class UpdataFrom extends Component {
 
         return (
             <Fragment>
-                <Form>
-                    <p style={{
-                        color: 'black',
-                        background: '#ffc107',
-                        display: 'inline-block',
-                        padding: '8px',
-                        borderRadius: '2px'
-                    }}>
-                        内容为上次输入内容</p>
+                <Form
+                    ref={this.updateFromRef}
+                    initialValues={{ content: "" }}
+                >
                     <Form.Item
                         name="content"
                         rules={[
