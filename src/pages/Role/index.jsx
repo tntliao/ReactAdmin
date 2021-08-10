@@ -3,6 +3,8 @@ import { Card, Table, Button, Modal, message } from 'antd';
 import { reqRoles, reqAddRole, reqUpdateRole } from '../../api';
 import AddRole from './AddRole';
 import UpdateRole from './UpdateRole';
+import memoryUtils from '../../utils/memoryUtils';
+import storageUtils from '../../utils/storageUtils'
 export default class Role extends Component {
 
     constructor(props) {
@@ -50,10 +52,6 @@ export default class Role extends Component {
                 roles
             })
         }
-    }
-
-    onChange = (selectedRowKeys, selectedRows) => {
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
     }
 
     // 点击行
@@ -125,10 +123,17 @@ export default class Role extends Component {
         //请求更新
         const result = await reqUpdateRole(role);
         if (result.status === 0) {
-            message.success('设置角色权限成功');
             //更新数据方法1：
             // this.getRoles();
-
+            //如果更新的是自己的权限，强制退出
+            if (role._id === memoryUtils.user.role_id) {
+                memoryUtils.user = {};
+                storageUtils.removeStorage();
+                this.props.history.replace('/login');
+                message.success('当前用户角色权限修改了，重新登录');
+            } else {
+                message.success('设置角色权限成功');
+            }
             /* this.setState({
                 roles: [...this.state.roles]
             }) */
@@ -157,7 +162,6 @@ export default class Role extends Component {
             <div>
                 <Card title={title}>
                     <Table
-
                         pagination={{ defaultPageSize: 4 }}
                         locale={{ filterReset: true }}
                         bordered
@@ -166,8 +170,10 @@ export default class Role extends Component {
                         dataSource={roles}
                         rowSelection={{
                             type: "radio",
-                            onChange: this.onChange,
-                            selectedRowKeys: [role._id]
+                            selectedRowKeys: [role._id],
+                            onSelect: (role) => {
+                                this.setState({ role })
+                            }
                         }}
                         onRow={this.onRow}
                     />
@@ -175,11 +181,8 @@ export default class Role extends Component {
 
                 <Modal title="添加角色"
                     visible={isShowRole}
-
                     onOk={this.handleRole}
-                    onCancel={() => {
-                        this.setState({ isShowRole: false });
-                    }}
+                    onCancel={() => { this.setState({ isShowRole: false }) }}
                 >
                     <AddRole ref={this.roleRef} />
                 </Modal>
@@ -187,9 +190,7 @@ export default class Role extends Component {
                 <Modal title="设置角色权限"
                     visible={isShowAuth}
                     onOk={this.handleAuth}
-                    onCancel={() => {
-                        this.setState({ isShowAuth: false });
-                    }}
+                    onCancel={() => { this.setState({ isShowAuth: false }) }}
                 >
                     <UpdateRole role={role} ref={this.authRef} />
                 </Modal>

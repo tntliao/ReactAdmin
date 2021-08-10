@@ -3,11 +3,30 @@ import { Menu } from 'antd';
 import { Link, withRouter } from 'react-router-dom';
 import menuList from '../../config/menuConfig';
 import logo from '../../assets/images/logo.png';
+import memoryUtils from '../../utils/memoryUtils'
 import './index.less';
 
 const { SubMenu } = Menu;
 
 class LeftNav extends Component {
+
+    // 判断当前登录用户对item是否有权限
+    hasAuth = (item) => {
+        const { key, isPublic } = item;
+        const username = memoryUtils.user.username;
+        const menus = memoryUtils.user.role.menus;
+        /* 
+            1.如果当前用户是admin
+            2，如果当前item是公开的
+            3.当前用户有item的权限：key有没有menus中
+         */
+        if (username === 'admin' || isPublic || menus.indexOf(key) !== -1) {
+            return true
+        } else if (item.children) { //4，如果当前用户有次item的某个子item的权限
+            return !!item.children.find(child => menus.indexOf(child.key) !== -1)
+        }
+        return false;
+    }
 
     //第一种方法
     /* getMenuNodes = (menuList) => {
@@ -42,25 +61,27 @@ class LeftNav extends Component {
             path = '/shop/commodity';
         }
         return menuList.reduce((pre, item) => {
-            if (item.children) {
-                // 2.查找一个与当前请求路径匹配的子item 
-                const cItem = item.children.find(cItem => cItem.key === path);
-                // 2.1如果匹配，说明需要展开，把它存起来
-                if (cItem) this.openKey = item.key;
-
-                pre.push(
-                    <SubMenu key={item.key} icon={item.icon} title={item.title}>
-                        {this.getMenuNodes(item.children)}
-                    </SubMenu>
-                )
-            } else {
-                pre.push(
-                    <Menu.Item key={item.key} icon={item.icon}>
-                        <Link to={item.key}>
-                            {item.title}
-                        </Link>
-                    </Menu.Item>
-                )
+            //如果当前用户有item对应的权限，才能显示对应的菜单项
+            if (this.hasAuth(item)) {
+                if (item.children) {
+                    // 2.查找一个与当前请求路径匹配的子item 
+                    const cItem = item.children.find(cItem => cItem.key === path);
+                    // 2.1如果匹配，说明需要展开，把它存起来
+                    if (cItem) this.openKey = item.key;
+                    pre.push(
+                        <SubMenu key={item.key} icon={item.icon} title={item.title}>
+                            {this.getMenuNodes(item.children)}
+                        </SubMenu>
+                    )
+                } else {
+                    pre.push(
+                        <Menu.Item key={item.key} icon={item.icon}>
+                            <Link to={item.key}>
+                                {item.title}
+                            </Link>
+                        </Menu.Item>
+                    )
+                }
             }
             return pre;
         }, [])
