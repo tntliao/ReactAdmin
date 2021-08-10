@@ -25,11 +25,11 @@ export default class Admin extends Component {
             return <Redirect to="/" />
         }
         return (
-            <Layout style={{ height: '100%', overflow: 'hidden' }}>
+            <Layout style={{ minHeight: "100%" }}>
                 <Sider>
                     <LeftNav />
                 </Sider>
-                <Layout>
+                <Layout >
                     <Header>Header</Header>
                     <Content style={{ backgroundColor: "#fff", margin: '20px' }}>
                         <Switch>

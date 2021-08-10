@@ -41,8 +41,8 @@ class Header extends Component {
             if (item.key === path) {
                 title = item.title
             } else if (item.children) {
-                const flag = item.children.find(item => {
-                    return item.key === path;
+                const flag = item.children.find(cItem => {
+                    return path.indexOf(cItem.key) === 0;
                 });
                 if (flag) title = item.title;
             }
@@ -77,13 +77,13 @@ class Header extends Component {
                         {/* <LinkBottom onClick={this.loginOut}>退出</LinkBottom> */}
                     </div>
                 </div>
-                <div className="header_bottom">
+                {<div className="header_bottom">
                     <div className="leftTitle">{title}</div>
                     <div className="rightTitle">
                         <p className="dateTime">{this.state.nowTime}</p>
                         <p className="weather">{this.state.weather}</p>
                     </div>
-                </div>
+                </div>}
             </div>
         )
     }
