@@ -13,7 +13,7 @@ import Role from '../Role';
 import Cylindrical from '../Graphical/Cylindrical';
 import BrokenLine from '../Graphical/BrokenLine';
 import PieChart from '../Graphical/PieChart';
-
+import NoFind from '../NoFind'
 const { Footer, Sider, Content } = Layout;
 
 export default class Admin extends Component {
@@ -33,15 +33,16 @@ export default class Admin extends Component {
                     <Header>Header</Header>
                     <Content style={{ backgroundColor: "#fff", margin: '20px' }}>
                         <Switch>
-                            <Route path="/home" component={Home}></Route>
-                            <Route path="/shop/category" component={Category}></Route>
-                            <Route path="/shop/commodity" component={Commodity}></Route>
-                            <Route path="/user" component={User}></Route>
-                            <Route path="/role" component={Role}></Route>
-                            <Route path="/graphical/cylindrical" component={Cylindrical}></Route>
-                            <Route path="/graphical/brokenLine" component={BrokenLine}></Route>
-                            <Route path="/graphical/pieChart" component={PieChart}></Route>
-                            <Redirect to="/home" />
+                            <Redirect exact from='/' to='/home' />
+                            <Route exact path="/home" component={Home}></Route>
+                            <Route exact path="/shop/category" component={Category}></Route>
+                            <Route exact path="/shop/commodity" component={Commodity}></Route>
+                            <Route exact path="/user" component={User}></Route>
+                            <Route exact path="/role" component={Role}></Route>
+                            <Route exact path="/graphical/cylindrical" component={Cylindrical}></Route>
+                            <Route exact path="/graphical/brokenLine" component={BrokenLine}></Route>
+                            <Route exact path="/graphical/pieChart" component={PieChart}></Route>
+                            <Route component={NoFind} />
                         </Switch>
                     </Content>
                     <Footer style={{ textAlign: "center", color: '#ccc' }}>推荐使用谷歌浏览器，可以获得更佳页面操作体验</Footer>
